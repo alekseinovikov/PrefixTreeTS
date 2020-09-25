@@ -19,20 +19,35 @@ describe('PrefixTreeService', () => {
     service.add('test');
   });
 
+  it('should be possible to same words but find the only one', () => {
+    service.add('test');
+    service.add('test');
+    service.add('test');
+
+    service.find('tes')
+      .pipe(toArray())
+      .subscribe(value => {
+        expect(value.length).toEqual(1);
+        expect(value).toContain('test');
+      });
+  });
+
   it('should be possible to find added words', () => {
     service.add('test');
-    service.find('te')
-      .subscribe(res => {
-        console.log('ON VALUE!');
-        console.log(res);
-      }, error => {}, () => {
-        console.log('ON COMPLETE!!!');
-      });
-     /* .pipe(toArray())
+    service.add('testik');
+    service.add('testikan');
+    service.add('kutak');
+    service.add('kudffgtak');
+    service.add('kufdgdffgtak');
+    service.add('kufdgdfsgdffgtak');
+
+    service.find('tes')
+      .pipe(toArray())
       .subscribe(value => {
-        console.log(value);
-        expect(value.length).toEqual(1);
-        expect(value[0]).toEqual('test');
-      });*/
+        expect(value.length).toEqual(3);
+        expect(value).toContain('test');
+        expect(value).toContain('testik');
+        expect(value).toContain('testikan');
+      });
   });
 });

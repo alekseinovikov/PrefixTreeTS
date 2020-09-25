@@ -1,14 +1,13 @@
 import {Injectable} from '@angular/core';
 import {TermNode} from './node';
 import {Observable, Subscriber} from 'rxjs';
-import {stringify} from 'querystring';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PrefixTreeService {
 
-  private root: Map<string, TermNode> = new Map<string, TermNode>();
+  private root: Record<string, TermNode> = {};
 
   constructor() {
   }
@@ -18,7 +17,15 @@ export class PrefixTreeService {
       return;
     }
 
-    this.addWordRecursively(word, this.root);
+    const letter = word[0];
+    let rootElement = this.root[letter];
+    if (!rootElement) {
+      rootElement = new TermNode(letter, false, {});
+      this.root[letter] = rootElement;
+    }
+
+    const finalNode = this.addWordRecursively(word.substring(1), rootElement);
+    finalNode.end = true;
   }
 
   find(prefix: string): Observable<string> {
@@ -32,18 +39,11 @@ export class PrefixTreeService {
     if (!prefix || prefix.length < 1) {
       return;
     }
-    console.log(this.root, 'dsdsds');
-    console.log(JSON.stringify(this.root.entries()));
-    this.root.forEach((value, key) => {
-      console.log(`${key}=>${value}`);
-    });
-
-    console.log(JSON.stringify(this.root, null, 4));
 
     const letter = prefix[0];
     const restPrefix = prefix.substring(1);
 
-    const termNode = this.findBeginning(restPrefix, this.root.get(letter));
+    const termNode = this.findBeginning(restPrefix, this.root[letter]);
     if (!termNode) {
       return;
     }
@@ -59,7 +59,7 @@ export class PrefixTreeService {
     const letter = prefix[0];
     const restPrefix = prefix.substring(1);
 
-    const foundNode = node.subTree.get(letter);
+    const foundNode = node.subTree[letter];
     if (!foundNode) {
       return null;
     }
@@ -76,25 +76,27 @@ export class PrefixTreeService {
       observer.next(accumulator);
     }
 
-    node.subTree.forEach((value, key) => {
+    Object.entries(node.subTree).forEach(([key, value]) => {
       const subWord = accumulator + key;
-      this.accumulateAllWords(subWord, observer, node);
+      this.accumulateAllWords(subWord, observer, value);
     });
   }
 
-  private addWordRecursively(word: string, subTree: Map<string, TermNode>): void {
+  private addWordRecursively(word: string, node: TermNode): TermNode {
     if (!word || word.length === 0) {
-      return;
+      return node;
     }
 
-    const letter = word.substr(0, 1);
-    let foundNode = subTree.get(letter);
+    const letter = word[0];
+    const subTree = node.subTree;
+
+    let foundNode = subTree[letter];
     if (!foundNode) {
-      foundNode = new TermNode(letter, false, new Map<string, TermNode>());
-      subTree.set(letter, foundNode) ;
+      foundNode = new TermNode(letter, false, {});
+      subTree[letter] = foundNode;
     }
 
-    this.addWordRecursively(word.substring(1), foundNode.subTree);
+    return this.addWordRecursively(word.substring(1), foundNode);
   }
 
 }
