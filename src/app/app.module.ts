@@ -3,11 +3,14 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import {PrefixTreeComponent} from './prefix-tree/prefix-tree.component';
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
+    declarations: [
+        AppComponent,
+        PrefixTreeComponent,
+        PrefixTreeComponent
+    ],
   imports: [
     BrowserModule,
     AppRoutingModule
